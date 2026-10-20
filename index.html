@@ -33,6 +33,36 @@ button{border:0;border-radius:10px;background:var(--green);color:white;padding:1
 </header>
 <main>
   <div class="notice"><strong>প্রাথমিক ডেমো:</strong> এই সংস্করণে আবেদনগুলো শুধু এই ব্রাউজারের ডিভাইসে সংরক্ষিত থাকে। এটি নিরাপদ অনলাইন সদস্য ডেটাবেস নয় এবং এখনো অ্যাডমিন অনুমোদন ব্যবস্থা যুক্ত নয়।</div>
+  <section class="panel" id="authPanel">
+  <h2>সদস্য লগইন / নিবন্ধন</h2>
+
+  <label for="authEmail">ইমেইল ঠিকানা</label>
+  <input id="authEmail" type="email"
+    placeholder="আপনার ইমেইল লিখুন"
+    autocomplete="email" required>
+
+  <label for="authPassword">পাসওয়ার্ড</label>
+  <input id="authPassword" type="password"
+    placeholder="কমপক্ষে ৬ অক্ষর"
+    minlength="6" autocomplete="current-password"
+    required>
+
+  <div class="row">
+    <button type="button" id="authRegister">
+      নিবন্ধন করুন
+    </button>
+    <button type="button" id="authLogin">
+      লগইন
+    </button>
+  </div>
+
+  <button type="button" class="secondary"
+    id="authLogout" hidden>
+    লগআউট
+  </button>
+
+  <p id="authMessage" role="status"></p>
+  </section>
   <section class="grid" aria-label="অ্যাপের ফিচার">
     <button class="tile" onclick="showForm()"><span class="ico">📝</span><strong>সদস্য নিবন্ধন</strong><small>সদস্যপদের আবেদন</small></button>
     <button class="tile" onclick="showMembers()"><span class="ico">👥</span><strong>আবেদনের তালিকা</strong><small>এই ডিভাইসে সংরক্ষিত</small></button>
@@ -79,6 +109,85 @@ function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(console.error));
 }
+</script>
+<script type="module">
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+// Firebase Console-এর Config এখানে বসান
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const email = document.getElementById("authEmail");
+const password = document.getElementById("authPassword");
+const message = document.getElementById("authMessage");
+const loginButton = document.getElementById("authLogin");
+const registerButton = document.getElementById("authRegister");
+const logoutButton = document.getElementById("authLogout");
+
+registerButton.addEventListener("click", async () => {
+  if (!email.reportValidity() || !password.reportValidity()) return;
+
+  try {
+    await createUserWithEmailAndPassword(
+      auth, email.value.trim(), password.value
+    );
+    message.textContent = "নিবন্ধন সফল হয়েছে!";
+  } catch (error) {
+    message.textContent = "সমস্যা: " + error.message;
+  }
+});
+
+loginButton.addEventListener("click", async () => {
+  if (!email.reportValidity() || !password.reportValidity()) return;
+
+  try {
+    await signInWithEmailAndPassword(
+      auth, email.value.trim(), password.value
+    );
+    message.textContent = "লগইন সফল হয়েছে!";
+  } catch (error) {
+    message.textContent = "সমস্যা: " + error.message;
+  }
+});
+
+logoutButton.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    message.textContent = "লগআউট সফল হয়েছে!";
+  } catch (error) {
+    message.textContent = "সমস্যা: " + error.message;
+  }
+});
+
+onAuthStateChanged(auth, user => {
+  email.disabled = !!user;
+  password.disabled = !!user;
+  loginButton.hidden = !!user;
+  registerButton.hidden = !!user;
+  logoutButton.hidden = !user;
+
+  if (user) {
+    message.textContent = "লগইন করা আছে: " + user.email;
+  }
+});
 </script>
 </body>
 </html>
