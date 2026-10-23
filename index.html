@@ -89,7 +89,7 @@ function showForm(){
  <label for="address">ঠিকানা</label><textarea id="address" rows="2" maxlength="250"></textarea>
  <button type="submit">আবেদন সংরক্ষণ করুন</button>
  </form><p class="muted">বাস্তব ব্যবহারের আগে অনলাইন লগইন, সার্ভার এবং অ্যাডমিন অনুমোদন যুক্ত করতে হবে।</p>`;
- document.getElementById('memberForm').addEventListener('submit',e=>{
+document.getElementById('memberForm').addEventListener('submit',e=>{
   e.preventDefault();
   const item={id:'DEMO-'+Date.now().toString().slice(-7),name:document.getElementById('name').value.trim(),phone:document.getElementById('phone').value.trim(),area:document.getElementById('area').value,address:document.getElementById('address').value.trim(),status:'অনুমোদনের অপেক্ষায়'};
   const apps=getApplications();apps.unshift(item);
